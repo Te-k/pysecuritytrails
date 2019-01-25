@@ -1,1 +1,1 @@
-from .api import SecurityTrails, SecurityTrailsError
+from .api import SecurityTrails, SecurityTrailsError, SecurityTrailsForbidden, SecurityTrailsTooManyRequests
