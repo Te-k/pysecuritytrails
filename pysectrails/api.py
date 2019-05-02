@@ -1,4 +1,5 @@
 import requests
+import json
 
 
 class SecurityTrailsError(Exception):
@@ -9,7 +10,7 @@ class SecurityTrailsError(Exception):
 
 class SecurityTrailsForbidden(SecurityTrailsError):
     def __init__(self):
-        self.message = "Access Forbidden: maybe you need a higher suscription"
+        self.message = "Access Forbidden: you need a more expensive plan"
         SecurityTrailsError.__init__(self, self.message)
 
 
@@ -23,6 +24,11 @@ class SecurityTrails(object):
     def __init__(self, key):
         self.api_key = key
         self.base_url = "https://api.securitytrails.com/v1/"
+        self.SEARCH_FILTERS = ['ipv4', 'ipv6', 'apex_domain', 'keyword', 'mx',
+                'ns', 'cname', 'subdomain', 'soa_email', 'tld', 'whois_email',
+                'whois_street1', 'whois_street2', 'whois_street3',
+                'whois_street4', 'whois_telephone', 'whois_postalCode',
+                'whois_organization', 'whois_name', 'whois_fax',  'whois_city']
 
     def _get(self, path, params={}):
         headers = {'APIKEY': self.api_key}
@@ -162,7 +168,7 @@ class SecurityTrails(object):
         Raises:
             SecurityTrailsError: if anything else than 200 OK is returned
         """
-        return self._request(
+        return self._get(
             'domain/%s/associated' % hostname,
             params={'page': page}
         )
@@ -182,16 +188,31 @@ class SecurityTrails(object):
         Raises:
             SecurityTrailsError: if anything else than 200 OK is returned
         """
-        return self._get('domain/%s/whois' % hostname)
+        return self._get('domain/{}/whois'.format(hostname))
 
     # ------------------------ Domain Search ----------------------------------
-    def domain_search(self):
+    def domain_search(self, filter, include_ips=True, page=1):
         """
         Filter and search specific records using this endpoint.
         https://docs.securitytrails.com/v1.0/reference
 
+        Args:
+            filter: filter for the research
+            include_ips: Resolves any A records and additionally returns IP
+            addresses. (default is true)
+            page: The page of the returned results. (default is 1)
+
+
         """
-        raise NotImplementedError()
+        f = {'filter': filter}
+        return self._post(
+            'domains/list',
+            params={
+                'include_ips': include_ips,
+                'page': page
+            },
+            data=json.dumps(f)
+        )
 
     def domain_search_dsl(self, query, include_ips=True, page=1, scroll=False):
         """
@@ -221,11 +242,24 @@ class SecurityTrails(object):
             data={'query': query}
         )
 
-    def domain_search_stats(self):
+    def domain_search_stats(self, filter):
         """
         https://docs.securitytrails.com/v1.0/reference#search-count
+
+        Args:
+            filter: filter for the research
+
+        Returns:
+            A dict created from the JSON returned by Security Trails
+
+        Raises:
+            SecurityTrailsError: if anything else than 200 OK is returned
         """
-        raise NotImplementedError()
+        f = {'filter': filter}
+        return self._post(
+            'domains/stats',
+            data=json.dumps(f)
+        )
 
     # ------------------------------- History ---------------------------------
     def domain_history_dns(self, hostname, type='a', page=1):
