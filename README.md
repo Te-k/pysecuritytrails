@@ -5,15 +5,15 @@ Python3 wrapper for the Security Trails API https://securitytrails.com/
 ## Installation
 
 ```
-git clone https://github.com/Te-k/pysectrails.git
-cd pysectrails
+git clone https://github.com/Te-k/pysecuritytrails.git
+cd pysecuritytrails
 pip install .
 ```
 
 ## Usage
 
 ```py
-from pysectrails import SecurityTrails, SecurityTrailsError
+from pysecuritytrails import SecurityTrails, SecurityTrailsError
 st = SecurityTrails('APIKEYHERE')
 
 # Check that it is working

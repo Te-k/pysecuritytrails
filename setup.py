@@ -4,10 +4,10 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='pysectrails',
+    name='pysecuritytrails',
     version='0.1.2',
     description='Python wrapper around the Security Trails API',
-    url='https://github.com/Te-k/pysectrails',
+    url='https://github.com/Te-k/pysecuritytrails',
     author='Tek',
     author_email='tek@randhome.io',
     keywords='security',
@@ -16,7 +16,7 @@ setup(
     python_requires='>=3.5',
     packages=['pysectrails'],
     entry_points= {
-        'console_scripts': [ 'sectrails=pysectrails.cli:main' ]
+        'console_scripts': [ 'sectrails=pysecuritytrails.cli:main' ]
     },
     classifiers=[
         "Programming Language :: Python :: 3",
