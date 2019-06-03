@@ -20,6 +20,18 @@ class SecurityTrailsTooManyRequests(SecurityTrailsError):
         SecurityTrailsError.__init__(self, self.message)
 
 
+class SecurityTrailsInvalidKey(SecurityTrailsError):
+    def __init__(self):
+        self.message = "Unauthorized: You did not provide a valid API key"
+        SecurityTrailsError.__init__(self, self.message)
+
+
+class SecurityTrailsInvalidQuery(SecurityTrailsError):
+    def __init__(self, msg):
+        self.message = "Invalid query: {}".format(msg)
+        SecurityTrailsError.__init__(self, self.message)
+
+
 class SecurityTrails(object):
     def __init__(self, key):
         self.api_key = key
@@ -55,6 +67,10 @@ class SecurityTrails(object):
                 raise SecurityTrailsForbidden()
             elif r.status_code == 429:
                 raise SecurityTrailsTooManyRequests()
+            elif r.status_code == 401:
+                raise SecurityTrailsInvalidKey()
+            elif r.status_code == 400:
+                raise SecurityTrailsInvalidQuery(r.json()['message'])
             else:
                 raise SecurityTrailsError('Bad HTTP Status Code %i' % r.status_code)
         return r.json()
@@ -129,7 +145,7 @@ class SecurityTrails(object):
         Returns:
             A dict created from the JSON returned by Security Trails
             Example: {'subdomains': ['staging', 'www'],
-                 'endpoint': '/v1/domain/HOSTNAME/subdomains'}
+            'endpoint': '/v1/domain/HOSTNAME/subdomains'}
 
         Raises:
             SecurityTrailsError: if anything else than 200 OK is returned
@@ -239,7 +255,7 @@ class SecurityTrails(object):
                 'page': page,
                 'scroll': scroll
             },
-            data={'query': query}
+            data=json.dumps({'query': query})
         )
 
     def domain_search_stats(self, filter):
@@ -342,7 +358,7 @@ class SecurityTrails(object):
         return self._post(
             'ips/list',
             params={'page': page},
-            data={'query': query}
+            data=json.dumps({'query': query})
         )
 
     def ips_search_stats(self, query):
@@ -361,11 +377,11 @@ class SecurityTrails(object):
         """
         return self._post(
             'ips/stats',
-            data={'query': query}
+            data=json.dumps({'query': query})
         )
 
     # ------------------------------- Feeds -----------------------------------
-    def feeds_domains(self, type, filter, tld, ns):
+    def feeds_domains(self, type, filter=None, tld=None, ns=True):
         """
         Fetch zone files including authoritative nameservers with ease
         https://docs.securitytrails.com/v1.0/reference#feeds
@@ -378,16 +394,32 @@ class SecurityTrails(object):
             ns: show nameservers in the list
 
         Returns:
-            A dict created from the JSON returned by Security Trails
+            The output is a .csv.gz binary file.
 
         Raises:
             SecurityTrailsError: if anything else than 200 OK is returned
         """
-        if type not in ['all', 'dropped', 'new']:
+        params = {'ns': ns}
+        if type not in ['all', 'dropped', 'new', 'registered']:
             raise SecurityTrailsError('Invalid type')
-        if filter not in ['cctld', 'gtld']:
-            raise SecurityTrailsError('Invalid type')
-        return self._get(
-                'feeds/domains/%s' % type,
-                params={'filter': filter, 'tld': tld, 'ns': ns}
+        if filter:
+            if filter not in ['cctld', 'gtld']:
+                raise SecurityTrailsError('Invalid type')
+            else:
+                params['filter'] = filter
+        if tld:
+            params['tld'] = tld
+        headers = {'APIKEY': self.api_key}
+        r = requests.get(
+            self.base_url + 'feeds/domains/%s' % type,
+            params=params,
+            headers=headers
         )
+        if r.status_code != 200:
+            if r.status_code == 403:
+                raise SecurityTrailsForbidden()
+            elif r.status_code == 429:
+                raise SecurityTrailsTooManyRequests()
+            else:
+                raise SecurityTrailsError('Bad HTTP Status Code %i' % r.status_code)
+        return r.content

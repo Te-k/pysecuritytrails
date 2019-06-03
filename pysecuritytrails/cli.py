@@ -76,8 +76,11 @@ def main():
                     elif args.tags:
                         res = st.domain_tags(args.DOMAIN)
                         if "tags" in res:
-                            for tag in res["tags"]:
-                                print(tag)
+                            if len(res['tags']):
+                                for tag in res["tags"]:
+                                    print(tag)
+                            else:
+                                print('No tags for this domain')
                         else:
                             print('No tags found')
                     elif args.ips:

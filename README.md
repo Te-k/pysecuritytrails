@@ -1,4 +1,4 @@
-# pysectrails
+# pysecuritytrails
 
 Python3 wrapper for the Security Trails API https://securitytrails.com/
 
