@@ -35,7 +35,7 @@ history_dns = st.domain_history_dns('securitytrails.com')
 history_whois = st.domain_history_whois('securitytrails.com')
 ```
 
-For more information on the API, check https://securitytrails.com/corp/apidocs
+For more information on the API, check https://docs.securitytrails.com/reference
 
 ## List of Functions Implemented
 

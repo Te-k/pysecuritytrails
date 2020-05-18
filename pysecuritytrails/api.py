@@ -213,18 +213,24 @@ class SecurityTrails(object):
         https://docs.securitytrails.com/v1.0/reference
 
         Args:
-            filter: filter for the research
+            filter: filter for the research as {"ipv4": "IP"}
             include_ips: Resolves any A records and additionally returns IP
             addresses. (default is true)
             page: The page of the returned results. (default is 1)
 
 
         """
+        if not isinstance(filter, dict):
+            raise SecurityTrailsError("Filter should be a dict")
+
+        invalid_filters = [k for k in filter.keys() if k not in self.SEARCH_FILTERS]
+        if len(invalid_filters) > 0:
+            raise SecurityTrailsError("Unknown filters : {}".format(",".join(invalid_filters)))
         f = {'filter': filter}
         return self._post(
             'domains/list',
             params={
-                'include_ips': include_ips,
+                'include_ips': str(include_ips).lower(),
                 'page': page
             },
             data=json.dumps(f)
@@ -251,7 +257,7 @@ class SecurityTrails(object):
         return self._post(
             'domains/list',
             params={
-                'include_ips': include_ips,
+                'include_ips': str(include_ips).lower(),
                 'page': page,
                 'scroll': scroll
             },
