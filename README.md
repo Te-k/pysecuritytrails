@@ -4,6 +4,10 @@ Python3 wrapper for the Security Trails API https://securitytrails.com/
 
 ## Installation
 
+You can install it directly from the [pypi](https://pypi.org/project/pysecuritytrails/) package : `pip install pysecuritytrails`
+
+You can also install the last version of the source code:
+
 ```
 git clone https://github.com/Te-k/pysecuritytrails.git
 cd pysecuritytrails
